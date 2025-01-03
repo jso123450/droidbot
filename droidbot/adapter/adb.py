@@ -47,7 +47,7 @@ class ADB(Adapter):
 
         self.cmd_prefix = ['adb', "-s", device.serial]
 
-    def run_cmd(self, extra_args):
+    def run_cmd(self, extra_args, capture_output=True):
         """
         run an adb command and return the output
         :return: output of adb command
@@ -65,14 +65,19 @@ class ADB(Adapter):
 
         self.logger.debug('command:')
         self.logger.debug(args)
-        r = subprocess.check_output(args).strip()
-        if not isinstance(r, str):
-            r = r.decode()
+        stdout = subprocess.PIPE if capture_output else subprocess.DEVNULL
+        stderr = subprocess.PIPE if capture_output else subprocess.DEVNULL
+        proc = subprocess.run(args, stdout=stdout, stderr=stderr, check=True)
+        r = None
         self.logger.debug('return:')
-        self.logger.debug(r)
+        if capture_output:
+            r = proc.stdout.strip()
+            if not isinstance(r, str):
+                r = r.decode()
+            self.logger.debug(r)
         return r
 
-    def shell(self, extra_args):
+    def shell(self, extra_args, capture_output=True):
         """
         run an `adb shell` command
         @param extra_args:
@@ -86,7 +91,7 @@ class ADB(Adapter):
             raise ADBException(msg)
 
         shell_extra_args = ['shell'] + [ quote(arg) for arg in extra_args ]
-        return self.run_cmd(shell_extra_args)
+        return self.run_cmd(shell_extra_args, capture_output=capture_output)
 
     def check_connectivity(self):
         """

@@ -13,6 +13,7 @@ from .device import Device
 from .app import App
 from .env_manager import AppEnvManager
 from .input_manager import InputManager
+from .frida_config import FRIDA_CONFIG
 
 
 class DroidBot(object):
@@ -44,7 +45,8 @@ class DroidBot(object):
                  master=None,
                  humanoid=None,
                  ignore_ad=False,
-                 replay_output=None):
+                 replay_output=None,
+                 frida_scripts=None):
         """
         initiate droidbot with configurations
         :return:
@@ -80,6 +82,8 @@ class DroidBot(object):
         self.humanoid = humanoid
         self.ignore_ad = ignore_ad
         self.replay_output = replay_output
+        if frida_scripts:
+            FRIDA_CONFIG.enable(frida_scripts)
 
         self.enabled = True
 

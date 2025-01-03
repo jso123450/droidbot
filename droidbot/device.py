@@ -15,6 +15,7 @@ from .adapter.user_input_monitor import UserInputMonitor
 from .adapter.droidbot_ime import DroidBotIme
 from .app import App
 from .intent import Intent
+from .frida_config import FRIDA_CONFIG
 
 DEFAULT_NUM = '1234567890'
 DEFAULT_CONTENT = 'Hello world!'
@@ -192,6 +193,10 @@ class Device(object):
             if not adapter_enabled:
                 continue
             adapter.tear_down()
+
+        if FRIDA_CONFIG.enabled:
+            cmd = FRIDA_CONFIG.get_start_command_prefix(self.serial)
+            subprocess.check_call(f"pkill -f \"{cmd}\"")
 
     def is_foreground(self, app):
         """
@@ -472,10 +477,21 @@ class Device(object):
         """
         assert self.adb is not None
         assert intent is not None
+    
         if isinstance(intent, Intent):
             cmd = intent.get_cmd()
         else:
             cmd = intent
+
+        if FRIDA_CONFIG.enabled and "am start" in cmd:
+            apk = cmd.split(" ")[-1].split("/")[0]
+            cmd = FRIDA_CONFIG.get_start_command(self.serial, apk)
+
+            # we don't have to track these processes
+            # - new Frida executions will terminate the old process
+            # - Device.tear_down kills all matching Frida processes
+            subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ.copy(), shell=True)
+            return
         return self.adb.shell(cmd)
 
     def send_event(self, event):
@@ -766,7 +782,10 @@ class Device(object):
         self.adb.run_cmd(["push", local_file, remote_dir])
 
     def pull_file(self, remote_file, local_file):
-        self.adb.run_cmd(["pull", remote_file, local_file])
+        self.adb.run_cmd(
+            ["pull", remote_file, local_file], 
+            capture_output=False,
+        )
 
     def take_screenshot(self):
         # image = None

@@ -1,11 +1,11 @@
 # helper file of droidbot
 # it parses command arguments and send the options to droidbot
 import argparse
-from . import input_manager
-from . import input_policy
-from . import env_manager
-from .droidbot import DroidBot
-from .droidmaster import DroidMaster
+from droidbot import input_manager
+from droidbot import input_policy
+from droidbot import env_manager
+from droidbot import DroidBot
+from droidbot.droidmaster import DroidMaster
 
 
 def parse_args():
@@ -89,6 +89,8 @@ def parse_args():
                         help="Ignore Ad views by checking resource_id.")
     parser.add_argument("-replay_output", action="store", dest="replay_output",
                         help="The droidbot output directory being replayed.")
+    parser.add_argument("-frida_scripts", action="store", dest="frida_scripts",
+                        help="Comma-separated list of Frida scripts to use to launch the app.")
     options = parser.parse_args()
     # print options
     return options
@@ -106,6 +108,10 @@ def main():
         return
     if not opts.output_dir and opts.cv_mode:
         print("To run in CV mode, you need to specify an output dir (using -o option).")
+
+    frida_scripts = []
+    for script in opts.frida_scripts.split(","):
+        frida_scripts.append(script)
 
     if opts.distributed:
         if opts.distributed == "master":
@@ -165,7 +171,8 @@ def main():
             master=opts.master,
             humanoid=opts.humanoid,
             ignore_ad=opts.ignore_ad,
-            replay_output=opts.replay_output)
+            replay_output=opts.replay_output,
+            frida_scripts=frida_scripts)
         droidbot.start()
     return
 

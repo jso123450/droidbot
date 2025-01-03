@@ -6,13 +6,13 @@ setup(
     name='droidbot',
     packages=find_packages(include=['droidbot', 'droidbot.adapter']),
     # this must be the same as the name above
-    version='1.0.2b4',
+    version='1.0.2b5',
     description='A lightweight UI-guided test input generator for Android.',
     author='Yuanchun Li',
     license='MIT',
     author_email='pkulyc@gmail.com',
     url='https://github.com/honeynet/droidbot',  # use the URL to the github repo
-    download_url='https://github.com/honeynet/droidbot/tarball/1.0.2b4',
+    # download_url='https://github.com/honeynet/droidbot/tarball/1.0.2b4',
     keywords=['testing', 'monkey', 'exerciser'],  # arbitrary keywords
     classifiers=[
         # How mature is this project? Common values are
