@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import re
 import subprocess
 import sys
@@ -153,11 +154,21 @@ class Device(object):
         establish connections on this device
         :return:
         """
+        max_attempts = 3
         for adapter in self.adapters:
             adapter_enabled = self.adapters[adapter]
             if not adapter_enabled:
                 continue
-            adapter.connect()
+            attempt = 0
+            while attempt < max_attempts:
+                time.sleep(random.random())
+                try:
+                    adapter.connect()
+                    break
+                except Exception as exc:
+                    attempt += 1
+                    if attempt >= max_attempts:
+                        raise exc
 
         self.get_sdk_version()
         self.get_release_version()
